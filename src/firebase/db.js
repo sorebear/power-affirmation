@@ -18,19 +18,11 @@ export const createNewRoom = (
   });
 };
 
-export const createUser = (roomId, cardsPerUser) => {
-  // const powCards = [];
-  // const affCards = [];
-  // for (let i = 0; i < cardsPerUser; i += 1) {
-  //   powCards.push({})
-  // }
-}
-
 /*
  * READ Methods
  */
 
-export const getGameState = (roomId) => {
+export const getRoomState = (roomId) => {
   return db.ref(`activeRooms/${roomId}`).once('value');
 };
 
@@ -41,6 +33,35 @@ export const getAvailableRooms = () => {
 /*
  * UPDATE Methods
  */
+
+export const updateRoomOnChange = (roomId, callback) => {
+  db.ref(`activeRooms/${roomId}`).on('value', callback);
+};
+
+export const createUser = (roomId, roomState) => {
+  db.ref(`activeRooms/${roomId}/users`).push({
+    firstName: 'Storbin',
+    lastName: 'Faird',
+    active: true,
+  }).then((reference) => {
+    const userId = reference.path.pieces_[reference.path.pieces_.length - 1];  
+
+    for (let i = 0; i < roomState.cardsPerUser; i += 1) {
+      db.ref(`activeRooms/${roomId}/users/${userId}/cards`).push({
+        type: 'affirmation',
+        color: roomState.affColor,
+        name: 'Storbin Faird',
+      });
+      db.ref(`activeRooms/${roomId}/users/${userId}/cards`).push({
+        type: 'power',
+        color: roomState.powColor,
+      });
+    }
+  });
+}
+
+
+
 
 export const removeCurrentGameChangeListener = (roomId) => {
   db.ref(`activeRooms/${roomId}`).off('value');

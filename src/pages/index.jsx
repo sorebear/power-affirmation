@@ -7,7 +7,7 @@ import SEO from '../components/seo';
 import { db } from '../firebase';
 
 const IndexPage = () => {
-  const [availableRooms, setAvailableRooms] = useState([]);
+  const [availableRooms, setAvailableRooms] = useState({});
 
   useEffect(() => {
     db.getAvailableRooms().then((availableRooms) => {
@@ -16,20 +16,26 @@ const IndexPage = () => {
   }, []);
 
   const renderAvailableRooms = () => {
-    return Object.keys(availableRooms).map((roomId) => {
-      const room = availableRooms[roomId];
-      return (
-        <div key={roomId} className="is-one-quarter">
-          <Link to={`/room?id=${roomId}`}>
-            <div className="card">
-              <div className="card-content">
-                <p className="title is-4">{room.roomName}</p>
+    if (availableRooms) {
+      return Object.keys(availableRooms).map((roomId) => {
+        const room = availableRooms[roomId];
+        return (
+          <div key={roomId} className="is-one-quarter">
+            <Link to={`/room?id=${roomId}`}>
+              <div className="card">
+                <div className="card-content">
+                  <p className="title is-4">{room.roomName}</p>
+                </div>
               </div>
-            </div>
-          </Link>
-        </div>
-      );
-    });
+            </Link>
+          </div>
+        );
+      });
+    }
+
+    return (
+      <h2>No Active Rooms</h2>
+    )
   };
 
   return (
