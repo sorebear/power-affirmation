@@ -33,15 +33,14 @@ export const getAvailableRooms = () => {
 /*
  * UPDATE Methods
  */
-
 export const updateRoomOnChange = (roomId, callback) => {
   db.ref(`activeRooms/${roomId}`).on('value', callback);
 };
 
-export const createUser = (roomId, roomState) => {
+export const createUser = (roomId, firstName, lastName, roomState) => {
   db.ref(`activeRooms/${roomId}/users`).push({
-    firstName: 'Storbin',
-    lastName: 'Faird',
+    firstName,
+    lastName,
     active: true,
   }).then((reference) => {
     const userId = reference.path.pieces_[reference.path.pieces_.length - 1];  
@@ -50,7 +49,7 @@ export const createUser = (roomId, roomState) => {
       db.ref(`activeRooms/${roomId}/users/${userId}/cards`).push({
         type: 'affirmation',
         color: roomState.affColor,
-        name: 'Storbin Faird',
+        name: `${firstName} ${lastName}`,
       });
       db.ref(`activeRooms/${roomId}/users/${userId}/cards`).push({
         type: 'power',

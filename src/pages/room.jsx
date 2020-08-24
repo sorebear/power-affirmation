@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 
+import Cards from '../components/cards';
 import { store, actions, Consumer } from '../context/store';
 import { db } from '../firebase';
 
@@ -10,26 +11,36 @@ const Room = (props) => {
   const roomId = props.location.search.replace('?id=', '');
 
   useEffect(() => {
-    db.getRoomState(roomId).then((snapshot) => {
-      db.createUser(roomId, snapshot.val());
+    const { firstName, lastName } = state.local;
 
+    if (!firstName || !lastName) {
+      const jsonState = localStorage.getItem('cachedState');
+      
+      dispatch({
+        type: actions.SET_FULL_STATE,
+        payload: JSON.parse(jsonState),
+      });
+    }
+    else {
+      db.getRoomState(roomId).then((snapshot) => {
+        db.createUser(roomId, firstName, lastName, snapshot.val());
+      });
+    }
 
-      // console.log('Room', snapshot.val());
-      // dispatch({
-      //   type: actions.SET_ROOM_STATE,
-      //   payload: snapshot.val(),
-      // });
-    });
 
     db.updateRoomOnChange(roomId, (snapshot) => {
+      const stateToCache = {
+        local: state.local,
+        firebase: snapshot.val(),
+      };
+      localStorage.setItem('cachedState', JSON.stringify(stateToCache));
+      
       dispatch({
-        type: actions.SET_ROOM_STATE,
+        type: actions.SET_FIREBASE_STATE,
         payload: snapshot.val(),
       });
     });
-
   }, []);
-
 
   return (
     <Consumer>
@@ -37,7 +48,7 @@ const Room = (props) => {
         console.log('[Context]', context);
 
         return (
-          <div />
+          <Cards />
         );
       }}
     </Consumer>
